@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Eval Arena — Pre-Production Eval Console</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0C10; --panel: #1F2833; --text: #C5C6C7; --text-dim: #8a8d92;
+    --accent: #66FCF1; --accent-2: #45A29E;
+    --green: #2dd4a8; --yellow: #f4c542; --orange: #f4843a; --red: #ef4444;
+    --border: #2c3340;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 32px 24px; }
+  .container { max-width: 1400px; margin: 0 auto; }
+  header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+  .brand { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .brand h1 { font-family: 'JetBrains Mono', monospace; font-size: 24px; color: var(--accent); font-weight: 700; }
+  .brand .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+  .timestamp { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+
+  .headline-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 32px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .kpi-value.warn { color: var(--orange); }
+  .kpi-value.crit { color: var(--red); }
+  .kpi-value.pass { color: var(--green); }
+  .kpi-meta { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+  section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .section-header h2 { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 500; }
+  .section-header .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  th { text-align: left; padding: 12px 16px; background: rgba(102, 252, 241, 0.06); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 11px; font-weight: 500; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  td.entity-name { color: var(--text); font-weight: 500; }
+  td.score { font-weight: 700; }
+  td.score.good { color: var(--green); }
+  td.score.warn { color: var(--yellow); }
+  td.score.bad { color: var(--orange); }
+  td.score.crit { color: var(--red); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+  .badge.pass { background: rgba(45, 212, 168, 0.15); color: var(--green); }
+  .badge.fail { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+  .badge.improved { background: rgba(45, 212, 168, 0.15); color: var(--green); }
+  .badge.regression { background: rgba(244, 132, 58, 0.15); color: var(--orange); }
+  .badge.severe { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+  .badge.king { background: rgba(102, 252, 241, 0.15); color: var(--accent); }
+
+  .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .compare-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .compare-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .compare-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row .label { color: var(--text-dim); }
+  .compare-row .val { font-weight: 700; }
+  .compare-row .delta.pos { color: var(--green); }
+  .compare-row .delta.neg { color: var(--red); }
+  .compare-row .delta.zero { color: var(--text-dim); }
+
+  .gate-decision { background: var(--panel); border: 2px solid var(--green); border-radius: 8px; padding: 24px; }
+  .gate-decision.fail { border-color: var(--red); }
+  .gate-decision .gate-status { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: var(--green); }
+  .gate-decision.fail .gate-status { color: var(--red); }
+  .gate-list { font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-top: 12px; }
+  .gate-list li { padding: 6px 0; color: var(--text); list-style: none; }
+  .gate-list li::before { content: "✓ "; color: var(--green); margin-right: 4px; }
+  .gate-list.fail li::before { content: "✗ "; color: var(--red); }
+
+  footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px; font-family: 'JetBrains Mono', monospace; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="brand">
+    <h1>// AGENT EVAL ARENA</h1>
+    <span class="sub">Pre-Production Eval Console</span>
+  </div>
+  <div class="timestamp">Generated 2026-05-07T22:30:00Z · Datasets: 4 · Runs: 6 · Models compared: 3</div>
+</header>
+
+<!-- KPIs -->
+<div class="headline-grid">
+  <div class="kpi"><div class="kpi-label">Datasets</div><div class="kpi-value">4</div><div class="kpi-meta">2,100 cases total</div></div>
+  <div class="kpi"><div class="kpi-label">Active Runs</div><div class="kpi-value">6</div><div class="kpi-meta">last 7 days</div></div>
+  <div class="kpi"><div class="kpi-label">Models Compared</div><div class="kpi-value">3</div><div class="kpi-meta">opus 4.6 · 4.7 · gpt-4.5</div></div>
+  <div class="kpi"><div class="kpi-label">Open Gate Decisions</div><div class="kpi-value pass">2 pass</div><div class="kpi-meta">0 fail</div></div>
+  <div class="kpi"><div class="kpi-label">Avg Quality/$</div><div class="kpi-value">$2,860</div><div class="kpi-meta">per pass-rate point</div></div>
+  <div class="kpi"><div class="kpi-label">Regressions</div><div class="kpi-value pass">0</div><div class="kpi-meta">last 7 days</div></div>
+</div>
+
+<!-- Leaderboard -->
+<section>
+  <div class="section-header">
+    <h2>// LEADERBOARD — DS_SUPPORT_QA</h2>
+    <div class="meta">240 cases · 3 models</div>
+  </div>
+  <div class="panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Pass Rate</th>
+          <th>Avg Score</th>
+          <th>P95 Latency</th>
+          <th>Cost/Case</th>
+          <th>Quality/$</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="entity-name">claude-opus@4.7</td>
+          <td class="score good">94.2%</td>
+          <td class="score good">0.892</td>
+          <td>2,180ms</td>
+          <td>$0.01300</td>
+          <td>7,246</td>
+          <td><span class="badge king">best quality</span></td>
+        </tr>
+        <tr>
+          <td class="entity-name">claude-opus@4.6</td>
+          <td class="score good">92.1%</td>
+          <td class="score good">0.876</td>
+          <td>2,420ms</td>
+          <td>$0.01200</td>
+          <td>7,675</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="entity-name">claude-sonnet@4.6</td>
+          <td class="score warn">85.8%</td>
+          <td class="score warn">0.821</td>
+          <td>1,490ms</td>
+          <td>$0.00400</td>
+          <td>21,450</td>
+          <td><span class="badge king">best value · best cost · best latency</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Regression Comparison -->
+<section>
+  <div class="section-header">
+    <h2>// REGRESSION CHECK — OPUS 4.6 → 4.7 ON CODE COMPLETION</h2>
+    <div class="meta">candidate: run_2026_05_07_005</div>
+  </div>
+  <div class="grid-two">
+    <div class="compare-card">
+      <h3>Quality Delta</h3>
+      <div class="compare-row"><span class="label">Pass rate</span><span class="val"><span class="delta pos">+4.20pp</span> (78% → 82.2%)</span></div>
+      <div class="compare-row"><span class="label">Avg score</span><span class="val"><span class="delta pos">+0.024</span> (0.762 → 0.786)</span></div>
+      <div class="compare-row"><span class="label">New passes</span><span class="val">22 cases</span></div>
+      <div class="compare-row"><span class="label">New failures</span><span class="val">3 cases</span></div>
+      <div class="compare-row"><span class="label">Verdict</span><span class="val"><span class="badge improved">improved</span></span></div>
+    </div>
+    <div class="compare-card">
+      <h3>Cost / Latency Delta</h3>
+      <div class="compare-row"><span class="label">P95 latency</span><span class="val"><span class="delta pos">-200ms</span> (2,400 → 2,200)</span></div>
+      <div class="compare-row"><span class="label">Cost per case</span><span class="val"><span class="delta neg">+$0.001</span> ($0.018 → $0.019)</span></div>
+      <div class="compare-row"><span class="label">Quality/$</span><span class="val"><span class="delta pos">+9%</span></span></div>
+      <div class="compare-row"><span class="label">Total cost</span><span class="val">$9.12 / 480 cases</span></div>
+      <div class="compare-row"><span class="label">Recommendation</span><span class="val">Promote candidate</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CI Gate -->
+<section>
+  <div class="section-header">
+    <h2>// CI GATE — OPUS 4.7 PROMOTION</h2>
+    <div class="meta">thresholds: minPass=75 · maxRegression=2pp · costCap=$0.025</div>
+  </div>
+  <div class="gate-decision">
+    <div class="gate-status">PASS</div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); margin-top: 4px;">eval gate: promote candidate; all thresholds met</div>
+    <ul class="gate-list">
+      <li>Candidate pass rate 82.30% meets minimum 75%</li>
+      <li>Cost per case $0.019 within cap $0.025</li>
+      <li>Pass-rate delta +4.20pp within tolerance</li>
+      <li>No new failures exceeding tolerance (3 ≤ 2 max set: regression elevated)</li>
+      <li>Latency p95 2,200ms within unset cap</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Recent Runs -->
+<section>
+  <div class="section-header">
+    <h2>// RECENT RUNS</h2>
+    <div class="meta">last 7 days</div>
+  </div>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Run ID</th><th>Model</th><th>Dataset</th><th>Cases</th><th>Pass Rate</th><th>Timestamp</th></tr></thead>
+      <tbody>
+        <tr><td>run_2026_05_07_006</td><td>gpt-4.5@turbo</td><td>code_completion</td><td>480</td><td class="score warn">74.2%</td><td>May 7 13:00</td></tr>
+        <tr><td>run_2026_05_07_005</td><td>claude-opus@4.7</td><td>code_completion</td><td>480</td><td class="score good">82.3%</td><td>May 7 12:00</td></tr>
+        <tr><td>run_2026_05_07_003</td><td>claude-sonnet@4.6</td><td>support_qa</td><td>240</td><td class="score warn">85.8%</td><td>May 7 11:00</td></tr>
+        <tr><td>run_2026_05_07_002</td><td>claude-opus@4.7</td><td>support_qa</td><td>240</td><td class="score good">94.2%</td><td>May 7 10:00</td></tr>
+        <tr><td>run_2026_05_05_004</td><td>claude-opus@4.6</td><td>code_completion</td><td>480</td><td class="score warn">78.0%</td><td>May 5 10:00</td></tr>
+        <tr><td>run_2026_05_01_001</td><td>claude-opus@4.6</td><td>support_qa</td><td>240</td><td class="score good">92.1%</td><td>May 1 10:00</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  agent-eval-arena · part of the AI Platform Engineering portfolio · <a href="https://github.com/mizcausevic-dev" style="color: var(--accent);">github.com/mizcausevic-dev</a>
+</footer>
+
+</div>
+</body>
+</html>
