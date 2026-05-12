@@ -6,7 +6,7 @@ In this case the pressure showed up around policy drift, observability blind spo
 
 That was the opening for **agent-eval-arena**. The repo was designed around a simple idea: operators need more than visibility. They need evidence, priorities, and next actions that make sense under pressure. That is why the project is framed as platform governance rather than as a generic app demo. The point is not just to show that data can be rendered or APIs can be wired together. The point is to show what a practical control surface looks like when the audience is platform, security, and reliability teams.
 
-Existing tools missed the mark for understandable reasons. The available tooling landscape â€” monitoring, SIEM, CI, and governance tools â€” helped with record-keeping, scanning, reporting, or workflow coverage. What it still missed was a unified operator view that connected policy, evidence, and action under pressure. In other words, the gap was not capability in isolation. The gap was operational coherence. The team responsible for day-to-day decisions still had to reconstruct the story manually.
+Existing tools missed the mark for understandable reasons. The available tooling landscape - monitoring, SIEM, CI, and governance tools - helped with record-keeping, scanning, reporting, or workflow coverage. What it still missed was a unified operator view that connected policy, evidence, and action under pressure. In other words, the gap was not capability in isolation. The gap was operational coherence. The team responsible for day-to-day decisions still had to reconstruct the story manually.
 
 That shaped the design philosophy from the start:
 
