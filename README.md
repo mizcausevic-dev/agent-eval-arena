@@ -4,7 +4,7 @@
 
 Local reference API for deterministic LLM evaluation. It scores caller-provided results, compares runs case by case, ranks seeded models, and returns a promotion gate verdict. The included datasets and runs are synthetic fixtures.
 
-**Release boundary:** this is a local decision simulator, not a connected CI control. It does not execute models, persist new runs, verify dataset provenance, authenticate clients, or block a deployment. The demo binds to `127.0.0.1`; `NODE_ENV=production` refuses to start. Do not submit real prompts or personal data.
+**Release boundary:** this is a local decision simulator, not a connected CI control. It does not execute models, persist new runs, verify dataset provenance, authenticate clients, or block a deployment. The demo binds to `127.0.0.1`; `NODE_ENV=production` rejects startup and imports of the app or route module. Do not submit real prompts or personal data.
 
 ## What it does
 
