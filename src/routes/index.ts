@@ -1,3 +1,4 @@
+import '../config/demo-only';
 import { Router } from 'express';
 import { TextMatchSchema, RegressionCheckSchema, RubricScoreSchema, GateEvalSchema } from '../schemas/validation-schemas';
 import { exactMatch, fuzzyMatch, tokenOverlap } from '../scorers/text-match';

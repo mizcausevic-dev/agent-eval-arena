@@ -48,7 +48,7 @@ export function evaluateGate(
   // Latency cap
   if (t.maxLatencyP95Ms > 0) {
     const sorted = [...candidate.cases].map((c) => c.latencyMs).sort((a, b) => a - b);
-    const p95Idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95));
+    const p95Idx = Math.max(0, Math.ceil(sorted.length * 0.95) - 1);
     const p95 = sorted[p95Idx] ?? 0;
     if (p95 > t.maxLatencyP95Ms) {
       reasons.push(`Candidate p95 latency ${p95}ms exceeds cap ${t.maxLatencyP95Ms}ms.`);
@@ -90,7 +90,7 @@ export function evaluateGate(
   let recommendedAction: string;
   if (reasons.length === 0) {
     decision = 'pass';
-    recommendedAction = 'Promote candidate; eval gate passed.';
+    recommendedAction = 'Candidate meets supplied thresholds; review before promotion.';
   } else {
     decision = 'fail';
     recommendedAction = reasons.some((r) => r.includes('regression') || r.includes('below minimum') || r.includes('new failures'))
