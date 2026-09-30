@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const TextMatchSchema = z.object({
-  prediction: z.string(),
-  expected: z.string(),
+  prediction: z.string().max(2048),
+  expected: z.string().max(2048),
   threshold: z.number().min(0).max(1).optional(),
   options: z
     .object({
@@ -14,7 +14,7 @@ export const TextMatchSchema = z.object({
 });
 
 const CaseResultSchema = z.object({
-  caseId: z.string().min(1),
+  caseId: z.string().min(1).max(128),
   passed: z.boolean(),
   score: z.number().min(0).max(1),
   latencyMs: z.number().min(0),
@@ -22,12 +22,12 @@ const CaseResultSchema = z.object({
 });
 
 export const EvalRunSchema = z.object({
-  runId: z.string().min(1),
-  modelId: z.string().min(1),
-  modelVersion: z.string().min(1),
-  datasetId: z.string().min(1),
-  timestamp: z.string().min(1),
-  cases: z.array(CaseResultSchema).min(1),
+  runId: z.string().min(1).max(128),
+  modelId: z.string().min(1).max(128),
+  modelVersion: z.string().min(1).max(128),
+  datasetId: z.string().min(1).max(128),
+  timestamp: z.string().datetime({ offset: true }),
+  cases: z.array(CaseResultSchema).min(1).max(5000),
 });
 
 export const RegressionCheckSchema = z.object({
@@ -36,21 +36,21 @@ export const RegressionCheckSchema = z.object({
 });
 
 export const RubricCriterionSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).max(128),
   weight: z.number().min(0).max(1),
-  description: z.string(),
+  description: z.string().max(1000),
 });
 
 export const RubricResultSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).max(128),
   status: z.enum(['pass', 'partial', 'fail']),
-  rationale: z.string(),
+  rationale: z.string().max(2000),
 });
 
 export const RubricScoreSchema = z.object({
-  caseId: z.string().min(1),
-  criteria: z.array(RubricCriterionSchema).min(1),
-  results: z.array(RubricResultSchema).min(1),
+  caseId: z.string().min(1).max(128),
+  criteria: z.array(RubricCriterionSchema).min(1).max(100),
+  results: z.array(RubricResultSchema).min(1).max(100),
 });
 
 export const GateThresholdsSchema = z.object({

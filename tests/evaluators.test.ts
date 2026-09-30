@@ -53,6 +53,14 @@ test('compareRuns: throws on dataset mismatch', () => {
   assert.throws(() => compareRuns(baseline, other), /different datasets/);
 });
 
+test('compareRuns: rejects a changed or duplicate case set', () => {
+  const changed = { ...baseline, cases: baseline.cases.map((c, index) => index === 3 ? { ...c, caseId: 'new_case' } : c) };
+  assert.throws(() => compareRuns(baseline, changed), /same case IDs/);
+  assert.throws(() => evaluateGate(changed, baseline), /same case IDs/);
+  const duplicate = { ...baseline, cases: baseline.cases.map((c, index) => index === 3 ? { ...c, caseId: 'case_0' } : c) };
+  assert.throws(() => compareRuns(baseline, duplicate), /Duplicate case IDs/);
+});
+
 test('buildLeaderboard: ranks by quality / cost / latency / value', () => {
   const fastCheap = makeRun('sonnet', '4.6', 'ds_test', [
     { passed: true, score: 0.85, latencyMs: 800, costUsd: 0.003 },
@@ -128,4 +136,12 @@ test('evaluateGate: latency cap enforced', () => {
   const r = evaluateGate(slow, null, { minPassRate: 50, maxLatencyP95Ms: 3000 });
   assert.equal(r.decision, 'fail');
   assert.ok(r.reasons.some((s) => s.toLowerCase().includes('latency')));
+});
+
+test('evaluateGate: p95 uses nearest-rank percentile', () => {
+  const candidate = makeRun('m', '1', 'ds_test', Array.from({ length: 20 }, (_, i) => ({
+    passed: true, score: 1, latencyMs: (i + 1) * 100, costUsd: 0.01,
+  })));
+  assert.equal(evaluateGate(candidate, null, { maxLatencyP95Ms: 1900 }).decision, 'pass');
+  assert.equal(evaluateGate(candidate, null, { maxLatencyP95Ms: 1899 }).decision, 'fail');
 });

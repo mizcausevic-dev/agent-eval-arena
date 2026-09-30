@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Eval Arena | Local fixture evidence</title>
+  <link rel="stylesheet" href="/demo/runtime.css">
+  <script defer src="/demo/runtime-ui.js"></script>
+  <script defer src="/demo/runtime.js"></script>
+</head>
+<body data-app="eval">
+  <div class="shell">
+    <header class="masthead">
+      <div class="brand"><span class="mark" aria-hidden="true">EA</span><div><p class="kicker">LOCAL API EVIDENCE / 03</p><h1>Agent Eval Arena</h1></div></div>
+      <p class="state" id="state" role="status">Loading local fixture responses…</p>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="intro-title">
+        <p class="kicker">Synthetic eval runs · actual API response</p>
+        <h2 id="intro-title">A gate should explain its verdict.</h2>
+        <p>This page compares seeded eval runs through the local API. Scores demonstrate gate logic; they do not represent live model evaluations or an installed CI gate.</p>
+      </section>
+      <section class="metrics" id="metrics" aria-label="Fixture summary"></section>
+      <div class="panels">
+        <section class="panel" aria-labelledby="primary-title"><div class="panel-head"><p class="kicker">RUNS / GET /api/runs</p><h3 id="primary-title">Seeded run set</h3></div><div class="table-wrap"><table><thead><tr id="primary-head"></tr></thead><tbody id="primary-rows"></tbody></table></div></section>
+        <section class="panel" aria-labelledby="secondary-title"><div class="panel-head"><p class="kicker">GATE / POST /api/eval/gate</p><h3 id="secondary-title">Candidate verdict</h3></div><div class="stack" id="secondary"></div></section>
+      </div>
+    </main>
+    <footer>LOCAL FIXTURE MODE · no live model calls, authentication, or CI integration · <a href="/api/runs">Runs response</a></footer>
+  </div>
+</body>
+</html>

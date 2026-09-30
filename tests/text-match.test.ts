@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { exactMatch, fuzzyMatch, tokenOverlap } from '../src/scorers/text-match';
+import { TextMatchSchema } from '../src/schemas/validation-schemas';
 
 test('exactMatch: identical strings score 1', () => {
   const r = exactMatch('hello world', 'hello world');
@@ -39,6 +40,11 @@ test('fuzzyMatch: threshold respected', () => {
   // 1 char different out of 4 = 0.75 similarity
   const r = fuzzyMatch('abcd', 'abce', 0.9);
   assert.equal(r.matched, false);
+});
+
+test('text-match API schema bounds comparison input', () => {
+  assert.equal(TextMatchSchema.safeParse({ prediction: 'a'.repeat(2049), expected: 'a' }).success, false);
+  assert.equal(TextMatchSchema.safeParse({ prediction: 'a', expected: 'a'.repeat(2048) }).success, true);
 });
 
 test('tokenOverlap: same words different order matches', () => {

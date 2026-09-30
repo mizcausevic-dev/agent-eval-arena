@@ -41,7 +41,7 @@ export interface RegressionResult {
 function p95(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
-  const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95));
+  const idx = Math.max(0, Math.ceil(sorted.length * 0.95) - 1);
   return sorted[idx];
 }
 
@@ -52,11 +52,13 @@ export function compareRuns(baseline: EvalRun, candidate: EvalRun): RegressionRe
 
   const baselineMap = new Map(baseline.cases.map((c) => [c.caseId, c]));
   const candidateMap = new Map(candidate.cases.map((c) => [c.caseId, c]));
-  const sharedCaseIds = [...baselineMap.keys()].filter((id) => candidateMap.has(id));
-
-  if (sharedCaseIds.length === 0) {
-    throw new Error('No overlapping cases between runs.');
+  if (baselineMap.size !== baseline.cases.length || candidateMap.size !== candidate.cases.length) {
+    throw new Error('Duplicate case IDs are not comparable.');
   }
+  if (baselineMap.size !== candidateMap.size || [...baselineMap.keys()].some((id) => !candidateMap.has(id))) {
+    throw new Error('Runs must contain the same case IDs to compare results.');
+  }
+  const sharedCaseIds = [...baselineMap.keys()];
 
   const baselinePassRate = (baseline.cases.filter((c) => c.passed).length / baseline.cases.length) * 100;
   const candidatePassRate = (candidate.cases.filter((c) => c.passed).length / candidate.cases.length) * 100;
